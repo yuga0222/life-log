@@ -2,11 +2,11 @@ from .base import *
 DATABASES = {
    'default': {
       'ENGINE': 'django.db.backends.mysql',
-      'NAME': 'app',
-      'USER': 'root',
+      'NAME': 'lifelog_db',
+      'USER': 'user',
       'PASSWORD': 'password',
-      'HOST': 'host.docker.internal',
-      'PORT': '53306',
+      'HOST': 'life-log-db',
+      'PORT': '3306',
       'ATOMIC_REQUESTS': True
    }
 }
