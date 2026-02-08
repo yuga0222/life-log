@@ -1,0 +1,34 @@
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/python:2-3.14-trixie
+    working_dir: /workspaces/backend
+    volumes:
+      - .:/workspaces/backend:cached
+    command: sleep infinity
+    depends_on:
+      - life-log-db
+    environment:
+      - DB_HOST=life-log-db
+    ports:
+      - "8000:8000"
+
+  life-log-db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: lifelog_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql_data:

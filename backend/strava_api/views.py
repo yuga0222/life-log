@@ -70,19 +70,5 @@ class StravaActivityView(APIView):
 
         if len(all_activities) == 0:
              return Response({"message": "アクティビティデータがありません"})
-
-        # 3. 最新のアクティビティ（リストの0番目）を取り出して加工
-        latest_activity = all_activities[0]
-
-        # 距離(m)をkmに変換
-        distance_km = latest_activity['distance'] / 1000 
         
-        # 表示したいデータだけを辞書にまとめる
-        custom_data = {
-            "title": "最新の走行データ",
-            "name": latest_activity['name'],
-            "distance_km": round(distance_km, 2), # 小数点第2位まで
-            "date": latest_activity['start_date']
-        }
-        
-        return Response(custom_data)
+        return Response(all_activities)

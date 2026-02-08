@@ -2,17 +2,25 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
 	"name": "Python 3",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/python:2-3.14-trixie",
+	"dockerComposeFile": ["../docker-compose.yml"],
+	"service": "app",
+	"runServices": ["life-log-db"],
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
+
+	// Mount host Git config to container
+	// Linux/Mac: uses ${localEnv:HOME}/.gitconfig
+	// Windows: uses ${localEnv:USERPROFILE}\.gitconfig (if HOME is not set)
+	"mounts": [
+		"source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
+	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.\
 	"forwardPorts": [8000],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip3 install -r requirements.lock" ,
+	"postCreateCommand": "pip3 install -r requirements.lock && if [ -f /home/vscode/.gitconfig ]; then echo 'Git config mounted successfully'; else echo 'Git config not found, please set manually: git config --global user.name \"Your Name\" && git config --global user.email \"your.email@example.com\"'; fi" ,
 
 	// Configure tool-specific properties.
 	// "customizations": {},

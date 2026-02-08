@@ -1,3 +1,5 @@
 djangorestframework
+django-cors-headers
 mysqlclient
 requests
+python-dotenv
