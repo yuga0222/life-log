@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { Activity } from './types/activity';
-import ActivityCard from './components/ActivityCard';
-import SleepCardPlaceholder from './components/SleepCardPlaceholder';
+import type { Activity } from '../types/activity';
+import ActivityCard from '../components/ActivityCard';
 
 export default function Home() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -42,8 +41,11 @@ export default function Home() {
         }
         
         const data = await response.json();
-        setActivities(Array.isArray(data) ? data.slice(0, 1) : []);
-        
+        // 原因特定用: 実際のAPIレスポンスをコンソールに出力（ブラウザのF12→Consoleで確認）
+        console.log('[Strava API] 生レスポンス:', data);
+        console.log('[Strava API] 型:', Array.isArray(data) ? '配列' : 'オブジェクト', typeof data === 'object' && data !== null ? 'キー一覧: ' + Object.keys(data).join(', ') : '');
+        console.log('[Strava API] 抽出した件数:', data.length);
+        setActivities(data);
       } catch (err) {
         console.error('[API] エラー詳細:', err);
         let errorMessage = 'An error occurred';
@@ -141,30 +143,21 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 md:p-8">
-      <div className="w-full max-w-2xl mx-auto space-y-10">
-        <header className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-800">今日のサマリー</h1>
-        </header>
+    <div className="min-h-screen bg-slate-50 p-6 md:p-8">
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-800">Strava Activities</h1>
+        <p className="text-slate-500 mt-1">取得したアクティビティ一覧</p>
+      </header>
 
-        <section>
-          <h2 className="text-lg font-semibold text-slate-700 mb-3">睡眠</h2>
-          <SleepCardPlaceholder />
-        </section>
-
-        <section>
-          <h2 className="text-lg font-semibold text-slate-700 mb-3">トレーニング</h2>
-          {activities.length === 0 ? (
-            <p className="text-slate-500 text-center py-4">トレーニング履歴がありません</p>
-          ) : (
-            <div className="flex flex-col gap-6">
-              {activities.map((activity) => (
-                <ActivityCard key={activity.id} activity={activity} large />
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
+      {activities.length === 0 ? (
+        <p className="text-slate-500">No activities found.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {activities.map((activity) => (
+            <ActivityCard key={activity.id} activity={activity} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

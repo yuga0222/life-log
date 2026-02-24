@@ -34,41 +34,81 @@ class StravaActivityView(APIView):
         }
 
         # ポスト投函！
-        res = requests.post(auth_url, data=payload, verify=False)
-        access_token = res.json().get('access_token')
-        
-        print(f"新しいトークンを発行しました: {access_token}") # 確認用ログ
+        try:
+            res = requests.post(auth_url, data=payload, verify=False, timeout=10)
+        except requests.RequestException as e:
+            print(f"トークン取得で接続エラー: {e}")
+            return None
+
+        try:
+            data = res.json()
+        except ValueError:
+            print(f"トークンAPIのレスポンスがJSONではありません: {res.text[:200]}")
+            return None
+
+        if res.status_code == 429:
+            print("Strava API: レート制限(429)です。しばらく待ってから再試行してください。")
+            return None
+        if res.status_code != 200:
+            print(f"トークン取得失敗 status={res.status_code}, body={data}")
+            return None
+
+        access_token = data.get('access_token')
+        if access_token:
+            print(f"新しいトークンを発行しました: {access_token[:20]}...")
         return access_token
 
     def get(self, request):
         # 1. ここで自動発行関数を呼び出す！
         access_token = self.get_access_token()
-        
+
         if not access_token:
-            return Response({"error": "トークンの自動発行に失敗しました。.envを確認してください。"})
-   
+            return Response(
+                {"error": "トークンの自動発行に失敗しました。.envを確認するか、Stravaのレート制限(429)の場合は時間をおいて再試行してください。"},
+                status=503
+            )
+
         url = "https://www.strava.com/api/v3/athlete/activities"
         headers = {'Authorization': f"Bearer {access_token}"}
-        
-        # 1. Stravaからデータを取得
-        response = requests.get(url, headers=headers)
-        
-        # エラーチェック：もし通信に失敗したら、その理由を表示して終了
+
+        try:
+            response = requests.get(url, headers=headers, timeout=15)
+        except requests.RequestException as e:
+            return Response(
+                {"error": "Stravaへの接続に失敗しました", "details": str(e)},
+                status=503
+            )
+
+        # レート制限(429)を明示的に処理
+        if response.status_code == 429:
+            return Response({
+                "error": "Strava APIのレート制限に達しました",
+                "message": "15分あたり約100リクエスト、1日1000リクエストの制限があります。時間をおいて再試行してください。"
+            }, status=429)
+
         if response.status_code != 200:
+            try:
+                details = response.json()
+            except ValueError:
+                details = response.text[:500]
             return Response({
                 "error": "Stravaからのデータ取得に失敗しました",
-                "details": response.json()
-            })
+                "status_code": response.status_code,
+                "details": details
+            }, status=502)
 
-        # ここで変数を定義します
-        all_activities = response.json()
-        
-        # 2. データが空っぽ（まだ一度も走っていない等）の場合の処理
-        # all_activities がリスト（配列）でない場合や、空の場合をチェック
+        try:
+            all_activities = response.json()
+        except ValueError:
+            return Response(
+                {"error": "StravaのレスポンスがJSONではありません", "raw": response.text[:300]},
+                status=502
+            )
+
         if not isinstance(all_activities, list):
-             return Response({"error": "予期せぬデータ形式です", "data": all_activities})
+            return Response({"error": "予期せぬデータ形式です", "data": all_activities})
 
         if len(all_activities) == 0:
-             return Response({"message": "アクティビティデータがありません"})
-        
+            return Response({"message": "アクティビティデータがありません"})
+
         return Response(all_activities)

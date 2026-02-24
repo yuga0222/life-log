@@ -4,6 +4,8 @@ import type { Activity } from '../types/activity';
 
 interface ActivityCardProps {
   activity: Activity;
+  /** トップページなどで大きく表示する場合 true */
+  large?: boolean;
 }
 
 /** アクティビティ種別に応じたバッジのスタイル */
@@ -16,7 +18,7 @@ function getTypeBadgeStyle(type: string): string {
   return 'bg-slate-100 text-slate-700 border-slate-200';
 }
 
-export default function ActivityCard({ activity }: ActivityCardProps) {
+export default function ActivityCard({ activity, large = false }: ActivityCardProps) {
   const distanceKm = ((activity.distance ?? 0) / 1000).toFixed(1);
   const movingMinutes = Math.floor((activity.moving_time ?? 0) / 60);
   const elevation = activity.total_elevation_gain ?? 0;
@@ -28,15 +30,23 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
       })
     : '—';
 
+  const cardPadding = large ? 'p-6 md:p-8' : 'p-5';
+  const titleClass = large ? 'text-xl md:text-2xl font-semibold' : 'text-lg font-semibold';
+  const badgeClass = large ? 'text-sm px-3 py-1.5' : 'text-xs px-2.5 py-1';
+  const dateClass = large ? 'text-base text-slate-500' : 'text-sm text-slate-500';
+  const labelClass = large ? 'text-sm text-slate-500 uppercase tracking-wide' : 'text-xs text-slate-500 uppercase tracking-wide';
+  const valueClass = large ? 'text-xl md:text-2xl font-semibold text-slate-800 mt-1' : 'text-lg font-semibold text-slate-800 mt-0.5';
+  const unitClass = large ? 'text-base font-normal text-slate-500 ml-1' : 'text-sm font-normal text-slate-500 ml-0.5';
+
   return (
     <article className="bg-white rounded-xl border border-slate-200 shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-      <div className="p-5">
+      <div className={cardPadding}>
         <div className="flex items-start justify-between gap-3 mb-3">
-          <h2 className="text-lg font-semibold text-slate-800 line-clamp-2 flex-1 min-w-0">
+          <h2 className={`${titleClass} text-slate-800 line-clamp-2 flex-1 min-w-0`}>
             {activity.name ?? '—'}
           </h2>
           <span
-            className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full border ${getTypeBadgeStyle(
+            className={`shrink-0 font-medium rounded-full border ${badgeClass} ${getTypeBadgeStyle(
               activity.type ?? ''
             )}`}
           >
@@ -44,28 +54,28 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
           </span>
         </div>
 
-        <p className="text-sm text-slate-500 mb-4">{dateStr}</p>
+        <p className={`${dateClass} mb-4`}>{dateStr}</p>
 
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center">
-            <p className="text-xs text-slate-500 uppercase tracking-wide">距離</p>
-            <p className="text-lg font-semibold text-slate-800 mt-0.5">
+            <p className={labelClass}>距離</p>
+            <p className={valueClass}>
               {distanceKm}
-              <span className="text-sm font-normal text-slate-500 ml-0.5">km</span>
+              <span className={unitClass}>km</span>
             </p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-slate-500 uppercase tracking-wide">時間</p>
-            <p className="text-lg font-semibold text-slate-800 mt-0.5">
+            <p className={labelClass}>時間</p>
+            <p className={valueClass}>
               {movingMinutes}
-              <span className="text-sm font-normal text-slate-500 ml-0.5">min</span>
+              <span className={unitClass}>min</span>
             </p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-slate-500 uppercase tracking-wide">標高</p>
-            <p className="text-lg font-semibold text-slate-800 mt-0.5">
+            <p className={labelClass}>標高</p>
+            <p className={valueClass}>
               {elevation}
-              <span className="text-sm font-normal text-slate-500 ml-0.5">m</span>
+              <span className={unitClass}>m</span>
             </p>
           </div>
         </div>
