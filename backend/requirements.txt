@@ -1,5 +1,5 @@
 djangorestframework
 django-cors-headers
-mysqlclient
+psycopg2-binary
 requests
 python-dotenv
