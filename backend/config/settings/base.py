@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "strava_api",
-    'corsheaders', 
+    "corsheaders", 
+    "dbtest",
 ]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # これを一番上に追加
