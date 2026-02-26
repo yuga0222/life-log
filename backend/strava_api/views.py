@@ -3,6 +3,7 @@ from pathlib import Path # ★追加
 from dotenv import load_dotenv
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from .models import StravaActivity  # モデルをインポート
 import requests
 
 # .envファイルをロード
@@ -10,6 +11,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=BASE_DIR / '.env')
 
 class StravaActivityView(APIView):
+    def save_activity(self, activity_data):
+        """
+        Strava APIから取得したデータをデータベースへ保存する関数。
+        - activity_data: dict（Strava APIのアクティビティ1件分のデータ）
+        """
+        # 主キーはactivity_idであることを想定
+        activity_id = activity_data.get('id')
+        if not activity_id:
+            return None  # idがなければ何もしない
+
+        # 既存レコードを更新 or 新規追加
+        obj, created = StravaActivity.objects.update_or_create(
+            activity_id=activity_id,
+            defaults={
+                "activity_name": activity_data.get('name', ''),
+                "activity_type": activity_data.get('type', ''),
+                "distance": activity_data.get('distance', 0),
+                "moving_time": activity_data.get('moving_time', 0),
+                "elapsed_time": activity_data.get('elapsed_time', 0),
+                "total_elevation_gain": activity_data.get('total_elevation_gain', 0),
+            }
+        )
+        return obj
     # ★追加機能：アクセストークンを自動発行する関数
     def get_access_token(self):
         # .envから会員証情報を読み込む
@@ -111,4 +135,31 @@ class StravaActivityView(APIView):
         if len(all_activities) == 0:
             return Response({"message": "アクティビティデータがありません"})
 
+        for activity_data in all_activities:
+            self.save_activity(activity_data)
+            print(f"アクティビティデータを保存しました: {activity_data['name']}")
+            
         return Response(all_activities)
+
+
+class StravaSavedActivityView(APIView):
+    """
+    DBに保存済みのアクティビティ一覧を返すAPI（フロント参照用）
+    Strava APIを呼ばないので高速・レート制限の心配なし
+    """
+    def get(self, request):
+        activities = StravaActivity.objects.all().order_by('-activity_id')
+        data = [
+            {
+                "activity_id": a.activity_id,
+                "activity_name": a.activity_name,
+                "activity_type": a.activity_type,
+                "distance": float(a.distance),
+                "moving_time": a.moving_time,
+                "elapsed_time": a.elapsed_time,
+                "total_elevation_gain": float(a.total_elevation_gain),
+                "start_date": a.start_date.isoformat() if a.start_date else None,
+            }
+            for a in activities
+        ]
+        return Response(data)
