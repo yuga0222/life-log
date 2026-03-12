@@ -158,7 +158,7 @@ class StravaSavedActivityView(APIView):
                 "moving_time": a.moving_time,
                 "elapsed_time": a.elapsed_time,
                 "total_elevation_gain": float(a.total_elevation_gain),
-                "start_date": a.start_date.isoformat() if a.start_date else None,
+                "start_date": a.start_date.isoformat(),
             }
             for a in activities
         ]

@@ -13,7 +13,7 @@ export default function Home() {
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        const apiUrl = 'http://127.0.0.1:8000/api/strava/activities/';
+        const apiUrl = 'http://127.0.0.1:8000/api/strava/activities/saved';
         console.log('[API] リクエスト送信:', apiUrl);
         
         // タイムアウト設定（10秒）
@@ -159,7 +159,7 @@ export default function Home() {
           ) : (
             <div className="flex flex-col gap-6">
               {activities.map((activity) => (
-                <ActivityCard key={activity.id} activity={activity} large />
+                <ActivityCard key={activity.activity_id} activity={activity} large={true} />
               ))}
             </div>
           )}

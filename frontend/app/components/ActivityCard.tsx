@@ -43,14 +43,14 @@ export default function ActivityCard({ activity, large = false }: ActivityCardPr
       <div className={cardPadding}>
         <div className="flex items-start justify-between gap-3 mb-3">
           <h2 className={`${titleClass} text-slate-800 line-clamp-2 flex-1 min-w-0`}>
-            {activity.name ?? '—'}
+            {activity.activity_name ?? '—'}
           </h2>
           <span
             className={`shrink-0 font-medium rounded-full border ${badgeClass} ${getTypeBadgeStyle(
-              activity.type ?? ''
+              activity.activity_type ?? ''
             )}`}
           >
-            {activity.type ?? '—'}
+            {activity.activity_type ?? '—'}
           </span>
         </div>
 

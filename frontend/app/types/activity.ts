@@ -1,7 +1,7 @@
 export interface Activity {
-  id: number;
-  name: string;
-  type: string;
+  activity_id: number;
+  activity_name: string;
+  activity_type: string;
   distance: number;
   moving_time: number;
   elapsed_time: number;
